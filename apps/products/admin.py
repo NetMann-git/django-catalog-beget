@@ -12,11 +12,10 @@ from .models import (
     Category,
 )
 
-
 from .models import AttributeType
 from .models import AttributeValue
-
 from .models import Brand
+
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
@@ -34,6 +33,7 @@ class AttributeValueInline(admin.TabularInline):
     extra = 1
     fields = ("value", "sort_order")
     ordering = ("sort_order",)
+
 
 @admin.register(AttributeType)
 class AttributeTypeAdmin(admin.ModelAdmin):
@@ -81,6 +81,7 @@ class ProductAdmin(admin.ModelAdmin):
         "is_active",
         "image_tag",
     )
+    list_editable = ["is_active"]   # ← добавлено для редактирования прямо в списке
     list_filter = (
         "category",
         "brand",
