@@ -81,7 +81,7 @@ class ProductAdmin(admin.ModelAdmin):
         "is_active",
         "image_tag",
     )
-    list_editable = ["is_featured", "is_active"]   # ← теперь оба поля редактируются в списке
+    list_editable = ["price", "availability_status", "is_featured", "is_active"]   # ← теперь оба поля редактируются в списке
     list_filter = (
         "category",
         "brand",
