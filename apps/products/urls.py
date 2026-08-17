@@ -16,14 +16,14 @@ urlpatterns = [
     path("recently-viewed/", views.recently_viewed_list, name="recently_viewed"),
     path("brand/<slug:slug>/", views.brand_detail, name="brand_detail"),
     
-    # Управление товарами (менеджер) - ДОБАВИТЬ ЭТОТ БЛОК
+    # Управление товарами (менеджер)
+    path("manage/update/<int:product_id>/", views.product_manage_update_ajax, name="product_manage_update_ajax"),
     path("manage/", views.product_list_manage, name="product_list_manage"),
     path("create/", views.product_create, name="product_create"),
     path("edit/<int:product_id>/", views.product_edit, name="product_edit"),
     path("delete/<int:product_id>/", views.product_delete, name="product_delete"),
     path('attributes/<int:product_id>/', views.product_attributes, name='product_attributes'),
     path('attribute/delete/<int:attribute_id>/', views.attribute_delete, name='attribute_delete'),
-
     # Галерея
     path('gallery/add/<int:product_id>/', views.gallery_add, name='gallery_add'),
     path('gallery/delete/<int:image_id>/', views.gallery_delete, name='gallery_delete'),

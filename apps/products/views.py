@@ -37,6 +37,14 @@ from .context import ProductContextBuilder
 
 from apps.recommendations.services import RecommendationService
 
+from .constants import (
+    MAX_COMPARISON_ITEMS,
+    MAX_RECENTLY_VIEWED,
+    AVAILABILITY_CHOICES,
+)
+
+from decimal import Decimal, InvalidOperation
+
 
 def brand_detail(request, slug):
     brand = get_object_or_404(Brand, slug=slug)
@@ -323,7 +331,7 @@ def comparison_list(request):
 def product_list_manage(request):
     """Список товаров для управления (менеджер)."""
     
-    products = Product.objects.all().order_by('-id')  # ИСПРАВЛЕНО
+    products = Product.objects.all().order_by('-id')
     
     search = request.GET.get('search', '')
     if search:
@@ -341,8 +349,44 @@ def product_list_manage(request):
         'products': products_page,
         'search': search,
         'total': products.count(),
+        'availabilities': AVAILABILITY_CHOICES,   # ← добавлено
     }
     return render(request, 'products/manage_list.html', context)
+
+@role_required(ROLE_MANAGER, ROLE_ADMIN)
+@require_POST
+def product_manage_update_ajax(request, product_id):
+    """
+    AJAX-обновление полей товара в списке управления.
+    Ожидает поля: price, availability_status, is_featured, is_active.
+    """
+    product = get_object_or_404(Product, id=product_id)
+
+    # Обновляем цену (если она передана)
+    if 'price' in request.POST:
+        try:
+            product.price = Decimal(request.POST['price'])
+        except (ValueError, InvalidOperation):
+            return JsonResponse({'success': False, 'message': 'Некорректная цена'}, status=400)
+
+    # Обновляем наличие (если передано)
+    if 'availability_status' in request.POST:
+        av = request.POST['availability_status']
+        if av in dict(AVAILABILITY_CHOICES):
+            product.availability_status = av
+
+    # Обновляем булевы поля (только если они были в запросе)
+    if 'is_featured' in request.POST:
+        product.is_featured = request.POST.get('is_featured') == 'true'
+    if 'is_active' in request.POST:
+        product.is_active = request.POST.get('is_active') == 'true'
+
+    product.save()
+
+    # Очищаем кэш каталога
+    CatalogCache.clear_catalog()
+
+    return JsonResponse({'success': True})
 
 @role_required(ROLE_MANAGER, ROLE_ADMIN)
 def product_create(request):

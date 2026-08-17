@@ -2,6 +2,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load thumbnail %}
+
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'products/css/manage.css' %}">
 {% endblock %}
@@ -32,7 +33,9 @@
                     <th>Артикул</th>
                     <th>Цена</th>
                     <th>Категория</th>
-                    <th>Статус</th>
+                    <th>Наличие</th>
+                    <th>На главной</th>
+                    <th>Активен</th>
                     <th>Действия</th>
                 </tr>
             </thead>
@@ -52,12 +55,27 @@
                         </a>
                     </td>
                     <td>{{ product.article|default:"—" }}</td>
-                    <td>{{ product.price }} {{ product.currency }}</td>
+                    <td>
+                        <input type="number" step="0.01" 
+                               class="edit-field" 
+                               data-field="price" 
+                               data-product-id="{{ product.id }}" 
+                               value="{{ product.price }}" 
+                               style="width: 90px;">
+                    </td>
                     <td>{{ product.category.name|default:"—" }}</td>
                     <td>
-                        <span class="status-badge status-{% if product.is_active %}active{% else %}inactive{% endif %}">
-                            {% if product.is_active %}Активен{% else %}Неактивен{% endif %}
-                        </span>
+                        <select class="edit-field" data-field="availability_status" data-product-id="{{ product.id }}">
+                            {% for value, label in availabilities %}
+                                <option value="{{ value }}" {% if product.availability_status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="checkbox" class="edit-field" data-field="is_featured" data-product-id="{{ product.id }}" {% if product.is_featured %}checked{% endif %}>
+                    </td>
+                    <td>
+                        <input type="checkbox" class="edit-field" data-field="is_active" data-product-id="{{ product.id }}" {% if product.is_active %}checked{% endif %}>
                     </td>
                     <td>
                         <div class="actions">
@@ -69,6 +87,10 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <div style="margin-top: 20px; text-align: right;">
+            <button type="button" id="save-manage-changes" class="btn-primary">💾 Сохранить изменения</button>
+        </div>
         
         <!-- Пагинация -->
         <div class="pagination">
@@ -90,4 +112,9 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'products/js/manage.js' %}"></script>
 {% endblock %}
